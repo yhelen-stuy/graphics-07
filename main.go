@@ -1,0 +1,13 @@
+package main
+
+import ()
+
+func main() {
+	image := MakeImage(500, 500)
+	t := MakeMatrix(4, 4)
+	t.Ident()
+	e := MakeMatrix(4, 0)
+	p := MakeMatrix(4, 0)
+	// ParseFile("galleryscript", t, e, image)
+	ParseFile("script", t, p, e, image)
+}
