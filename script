@@ -11,7 +11,7 @@ move
 apply
 display
 #clear the edge matrix, test the sphere
-clear
+# clear
 # sphere
 # 0 0 0 200
 # display

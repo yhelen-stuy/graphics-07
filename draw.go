@@ -264,12 +264,12 @@ func (m *Matrix) AddBox(x, y, z, width, height, depth float64) {
 	m.AddPolygon(x1, y1, z, x1, y1, z1, x, y1, z1)
 
 	// Left
-	m.AddPolygon(x, y, z, x, y, z1, x, y1, z1)
-	m.AddPolygon(x, y1, z1, x, y1, z, x, y, z)
+	m.AddPolygon(x, y1, z, x, y, z, x, y, z1)
+	m.AddPolygon(x, y, z1, x, y1, z1, x, y1, z)
 
 	// Right
-	m.AddPolygon(x1, y1, z, x1, y, z, x1, y, z1)
-	m.AddPolygon(x1, y, z1, x1, y1, z1, x1, y1, z)
+	m.AddPolygon(x1, y, z, x1, y, z1, x1, y1, z1)
+	m.AddPolygon(x1, y1, z1, x1, y1, z, x1, y, z)
 }
 
 func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
