@@ -26,9 +26,9 @@ func (image Image) DrawPolygons(p *Matrix, c Color) {
 			image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
 			image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
 		} else {
-			image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
-			image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
-			image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
+			// image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
+			// image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
+			// image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
 		}
 	}
 }
@@ -272,7 +272,7 @@ func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 	p := points.mat
 	steps := int(1 / sphereStepSize)
 	latStart, lonStart := 0, 0
-	latEnd, lonEnd := 1, steps
+	latEnd, lonEnd := steps, steps
 	steps++
 	for lat := latStart; lat < latEnd; lat++ {
 		lat1 := lat * steps
@@ -288,7 +288,7 @@ func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 				fmt.Printf("*(%d, %d, %d)\n", index, index+1, indexLat2)
 				m.AddPolygon(p[0][index], p[1][index], p[2][index],
 					p[0][index+1], p[1][index+1], p[2][index+1],
-					p[0][indexLat2], p[1][indexLat2], p[2+1][indexLat2])
+					p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
 			}
 			if lon != lonEnd-1 {
 				// fmt.Printf("+(%.0f, %.0f, %.0f)\t\t", p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
