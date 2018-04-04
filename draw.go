@@ -2,21 +2,34 @@ package main
 
 import (
 	"errors"
-	// "fmt"
+	"fmt"
 	"math"
 )
 
 const (
-	sphereStepSize float64 = 1.0 / 50
+	sphereStepSize float64 = 1.0 / 10
 	torusStepSize  float64 = 1.0 / 50
 )
 
 func (image Image) DrawPolygons(p *Matrix, c Color) {
 	m := p.mat
 	for i := 0; i < p.cols-2; i += 3 {
-		image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
-		image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
-		image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
+		p1 := MakeVector(m[0][i], m[1][i], m[2][i], m[0][i+1], m[2][i+1], m[2][i+1])
+		p2 := MakeVector(m[0][i], m[1][i], m[2][i], m[0][i+2], m[1][i+2], m[2][i+2])
+		cross, err := CrossProduct(p1, p2)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		if cross[2] > 0 {
+			image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
+			image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
+			image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
+		} else {
+			image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
+			image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
+			image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
+		}
 	}
 }
 
@@ -225,43 +238,25 @@ func (m *Matrix) AddBezier(x0, y0, x1, y1, x2, y2, x3, y3, stepSize float64) err
 }
 
 func (m *Matrix) AddBox(x, y, z, width, height, depth float64) {
-	// Front maybe
-	// m.AddEdge(x, y, z, x+width, y, z)
-	// m.AddEdge(x, y, z, x, y-height, z)
-	// m.AddEdge(x+width, y, z, x+width, y-height, z)
-	// m.AddEdge(x, y-height, z, x+width, y-height, z)
-
-	// Connect front & back
-	// m.AddEdge(x, y, z, x, y, z-depth)
-	// m.AddEdge(x, y-height, z, x, y-height, z-depth)
-	// m.AddEdge(x+width, y, z, x+width, y, z-depth)
-	// m.AddEdge(x+width, y-height, z, x+width, y-height, z-depth)
-
-	// Back maybe
-	// m.AddEdge(x, y, z-depth, x+width, y, z-depth)
-	// m.AddEdge(x, y, z-depth, x, y-height, z-depth)
-	// m.AddEdge(x+width, y, z-depth, x+width, y-height, z-depth)
-	// m.AddEdge(x, y-height, z-depth, x+width, y-height, z-depth)
-
 	x1 := x + width
 	y1 := y - height
 	z1 := z - depth
 
 	// Front
 	m.AddPolygon(x, y, z, x, y1, z, x1, y1, z)
-	m.AddPolygon(x1, y1, z, x1, y, z, x, y, z)
+	m.AddPolygon(x, y, z, x1, y1, z, x1, y, z)
 
 	// Back
-	m.AddPolygon(x1, y, z1, x, y, z1, x, y1, z1)
-	m.AddPolygon(x, y1, z1, x1, y1, z1, x1, y, z1)
+	m.AddPolygon(x, y, z1, x1, y, z1, x, y1, z1)
+	m.AddPolygon(x1, y1, z1, x, y1, z1, x1, y, z1)
 
 	// Top
 	m.AddPolygon(x, y, z, x1, y, z, x1, y, z1)
-	m.AddPolygon(x1, y, z1, x, y, z1, x, y, z)
+	m.AddPolygon(x, y, z1, x1, y, z1, x, y, z)
 
 	// Bottom
-	m.AddPolygon(x, y1, z1, x, y1, z, x1, y1, z)
-	m.AddPolygon(x1, y1, z, x1, y1, z1, x, y1, z1)
+	m.AddPolygon(x1, y1, z, x, y1, z, x, y1, z1)
+	m.AddPolygon(x1, y1, z1, x1, y1, z, x, y1, z1)
 
 	// Left
 	m.AddPolygon(x, y1, z, x, y, z, x, y, z1)
@@ -269,24 +264,46 @@ func (m *Matrix) AddBox(x, y, z, width, height, depth float64) {
 
 	// Right
 	m.AddPolygon(x1, y, z, x1, y, z1, x1, y1, z1)
-	m.AddPolygon(x1, y1, z1, x1, y1, z, x1, y, z)
+	m.AddPolygon(x1, y, z, x1, y1, z, x1, y1, z1)
 }
 
 func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 	points := generateSpherePoints(cx, cy, cz, r)
-	for i := 0; i < points.cols; i++ {
-		p := points.mat
-		m.AddEdge(p[0][i], p[1][i], p[2][i], p[0][i], p[1][i], p[2][i])
+	p := points.mat
+	steps := int(1 / sphereStepSize)
+	latStart, lonStart := 0, 0
+	latEnd, lonEnd := 1, steps
+	steps++
+	for lat := latStart; lat < latEnd; lat++ {
+		lat1 := lat * steps
+		lat2 := (lat1 + steps) % points.cols
+		for lon := lonStart; lon <= lonEnd; lon++ {
+			index := lat1 + lon
+			indexLat2 := lat2 + lon
+			// Only draw one triangle at poles
+			if lon > 0 {
+				fmt.Printf("*(%d, %d, %d)\n", index, index+1, indexLat2)
+				m.AddPolygon(p[0][index], p[1][index], p[2][index],
+					p[0][index+1], p[1][index+1], p[2][index+1],
+					p[0][indexLat2], p[1][indexLat2], p[2+1][indexLat2])
+			}
+			if lon != lonEnd-1 {
+				fmt.Printf("+(%d, %d, %d)\n", indexLat2, index+1, indexLat2+1)
+				m.AddPolygon(p[0][indexLat2], p[1][indexLat2], p[2][indexLat2],
+					p[0][index+1], p[1][index+1], p[2][index+1],
+					p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1])
+			}
+		}
 	}
 }
 
 func generateSpherePoints(cx, cy, cz, r float64) *Matrix {
 	m := MakeMatrix(4, 0)
 	// Rotating
-	for i := 0.0; i < 1+sphereStepSize; i += sphereStepSize {
+	for i := 0.0; i <= 1.0; i += sphereStepSize {
 		phi := 2.0 * math.Pi * i
 		// Semicircle
-		for j := 0.0; j < 1+sphereStepSize; j += sphereStepSize {
+		for j := 0.0; j <= 1.0; j += sphereStepSize {
 			theta := math.Pi * j
 			x := r*math.Cos(theta) + cx
 			y := r*math.Sin(theta)*math.Cos(phi) + cy
