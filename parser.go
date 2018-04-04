@@ -125,7 +125,7 @@ func ParseFile(filename string, t *Matrix, p *Matrix, e *Matrix, image *Image) e
 				continue
 			}
 			fargs := numerize(args)
-			e.AddSphere(fargs[0], fargs[1], fargs[2], fargs[3])
+			p.AddSphere(fargs[0], fargs[1], fargs[2], fargs[3])
 
 		case "torus":
 			args := getArgs(scanner)
@@ -138,6 +138,7 @@ func ParseFile(filename string, t *Matrix, p *Matrix, e *Matrix, image *Image) e
 
 		case "clear":
 			e = MakeMatrix(4, 0)
+			p = MakeMatrix(4, 0)
 
 		case "apply":
 			// TODO: Error handling
@@ -146,8 +147,8 @@ func ParseFile(filename string, t *Matrix, p *Matrix, e *Matrix, image *Image) e
 
 		case "display":
 			image.Clear()
-			image.DrawLines(e, Color{r: 0, b: 0, g: 0})
-			image.DrawPolygons(p, Color{r: 0, b: 0, g: 0})
+			image.DrawLines(e, Color{r: 255, b: 0, g: 0})
+			image.DrawPolygons(p, Color{r: 0, b: 255, g: 0})
 			image.Display()
 
 		case "save":
@@ -157,8 +158,8 @@ func ParseFile(filename string, t *Matrix, p *Matrix, e *Matrix, image *Image) e
 				continue
 			}
 			image.Clear()
-			image.DrawPolygons(p, Color{r: 0, b: 0, g: 0})
-			image.DrawLines(e, Color{r: 0, b: 0, g: 0})
+			image.DrawLines(e, Color{r: 255, b: 0, g: 0})
+			image.DrawPolygons(p, Color{r: 0, b: 255, g: 0})
 			image.SavePPM(args[0])
 
 		case "quit":

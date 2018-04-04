@@ -277,17 +277,23 @@ func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 	for lat := latStart; lat < latEnd; lat++ {
 		lat1 := lat * steps
 		lat2 := (lat1 + steps) % points.cols
-		for lon := lonStart; lon <= lonEnd; lon++ {
+		for lon := lonStart; lon < lonEnd; lon++ {
 			index := lat1 + lon
 			indexLat2 := lat2 + lon
 			// Only draw one triangle at poles
 			if lon > 0 {
+				// fmt.Printf("*(%.0f, %.0f, %.0f)\t\t", p[0][index], p[1][index], p[2][index])
+				// fmt.Printf("*(%.0f, %.0f, %.0f)\t\t", p[0][index+1], p[1][index+1], p[2][index+1])
+				// fmt.Printf("*(%.0f, %.0f, %.0f)\n", p[0][indexLat2], p[1][indexLat2], p[2+1][indexLat2])
 				fmt.Printf("*(%d, %d, %d)\n", index, index+1, indexLat2)
 				m.AddPolygon(p[0][index], p[1][index], p[2][index],
 					p[0][index+1], p[1][index+1], p[2][index+1],
 					p[0][indexLat2], p[1][indexLat2], p[2+1][indexLat2])
 			}
 			if lon != lonEnd-1 {
+				// fmt.Printf("+(%.0f, %.0f, %.0f)\t\t", p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
+				// fmt.Printf("+(%.0f, %.0f, %.0f)\t\t", p[0][index+1], p[1][index+1], p[2][index+1])
+				// fmt.Printf("+(%.0f, %.0f, %.0f)\n", p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1])
 				fmt.Printf("+(%d, %d, %d)\n", indexLat2, index+1, indexLat2+1)
 				m.AddPolygon(p[0][indexLat2], p[1][indexLat2], p[2][indexLat2],
 					p[0][index+1], p[1][index+1], p[2][index+1],
