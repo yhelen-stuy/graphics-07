@@ -134,7 +134,7 @@ func ParseFile(filename string, t *Matrix, p *Matrix, e *Matrix, image *Image) e
 				continue
 			}
 			fargs := numerize(args)
-			e.AddTorus(fargs[0], fargs[1], fargs[2], fargs[3], fargs[4])
+			p.AddTorus(fargs[0], fargs[1], fargs[2], fargs[3], fargs[4])
 
 		case "clear":
 			e = MakeMatrix(4, 0)

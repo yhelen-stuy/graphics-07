@@ -7,14 +7,14 @@ import (
 )
 
 const (
-	sphereStepSize float64 = 1.0 / 10
-	torusStepSize  float64 = 1.0 / 50
+	sphereStepSize float64 = 1.0 / 50
+	torusStepSize  float64 = 1.0 / 25
 )
 
 func (image Image) DrawPolygons(p *Matrix, c Color) {
 	m := p.mat
 	for i := 0; i < p.cols-2; i += 3 {
-		p1 := MakeVector(m[0][i], m[1][i], m[2][i], m[0][i+1], m[2][i+1], m[2][i+1])
+		p1 := MakeVector(m[0][i], m[1][i], m[2][i], m[0][i+1], m[1][i+1], m[2][i+1])
 		p2 := MakeVector(m[0][i], m[1][i], m[2][i], m[0][i+2], m[1][i+2], m[2][i+2])
 		cross, err := CrossProduct(p1, p2)
 		if err != nil {
@@ -25,10 +25,6 @@ func (image Image) DrawPolygons(p *Matrix, c Color) {
 			image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
 			image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
 			image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
-		} else {
-			// image.DrawLine(c, int(m[0][i]), int(m[1][i]), int(m[0][i+1]), int(m[1][i+1]))
-			// image.DrawLine(c, int(m[0][i+1]), int(m[1][i+1]), int(m[0][i+2]), int(m[1][i+2]))
-			// image.DrawLine(c, int(m[0][i+2]), int(m[1][i+2]), int(m[0][i]), int(m[1][i]))
 		}
 	}
 }
@@ -252,7 +248,7 @@ func (m *Matrix) AddBox(x, y, z, width, height, depth float64) {
 
 	// Top
 	m.AddPolygon(x, y, z, x1, y, z, x1, y, z1)
-	m.AddPolygon(x, y, z1, x1, y, z1, x, y, z)
+	m.AddPolygon(x1, y, z1, x, y, z1, x, y, z)
 
 	// Bottom
 	m.AddPolygon(x1, y1, z, x, y1, z, x, y1, z1)
@@ -263,7 +259,7 @@ func (m *Matrix) AddBox(x, y, z, width, height, depth float64) {
 	m.AddPolygon(x, y, z1, x, y1, z1, x, y1, z)
 
 	// Right
-	m.AddPolygon(x1, y, z, x1, y, z1, x1, y1, z1)
+	m.AddPolygon(x1, y, z, x1, y1, z1, x1, y, z1)
 	m.AddPolygon(x1, y, z, x1, y1, z, x1, y1, z1)
 }
 
@@ -282,22 +278,15 @@ func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 			indexLat2 := lat2 + lon
 			// Only draw one triangle at poles
 			if lon > 0 {
-				// fmt.Printf("*(%.0f, %.0f, %.0f)\t\t", p[0][index], p[1][index], p[2][index])
-				// fmt.Printf("*(%.0f, %.0f, %.0f)\t\t", p[0][index+1], p[1][index+1], p[2][index+1])
-				// fmt.Printf("*(%.0f, %.0f, %.0f)\n", p[0][indexLat2], p[1][indexLat2], p[2+1][indexLat2])
-				fmt.Printf("*(%d, %d, %d)\n", index, index+1, indexLat2)
 				m.AddPolygon(p[0][index], p[1][index], p[2][index],
 					p[0][index+1], p[1][index+1], p[2][index+1],
 					p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
 			}
 			if lon != lonEnd-1 {
-				// fmt.Printf("+(%.0f, %.0f, %.0f)\t\t", p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
-				// fmt.Printf("+(%.0f, %.0f, %.0f)\t\t", p[0][index+1], p[1][index+1], p[2][index+1])
-				// fmt.Printf("+(%.0f, %.0f, %.0f)\n", p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1])
-				fmt.Printf("+(%d, %d, %d)\n", indexLat2, index+1, indexLat2+1)
-				m.AddPolygon(p[0][indexLat2], p[1][indexLat2], p[2][indexLat2],
+				m.AddPolygon(
 					p[0][index+1], p[1][index+1], p[2][index+1],
-					p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1])
+					p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1],
+					p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
 			}
 		}
 	}
@@ -306,10 +295,10 @@ func (m *Matrix) AddSphere(cx, cy, cz, r float64) {
 func generateSpherePoints(cx, cy, cz, r float64) *Matrix {
 	m := MakeMatrix(4, 0)
 	// Rotating
-	for i := 0.0; i <= 1.0; i += sphereStepSize {
+	for i := 0.0; i <= 1+sphereStepSize; i += sphereStepSize {
 		phi := 2.0 * math.Pi * i
 		// Semicircle
-		for j := 0.0; j <= 1.0; j += sphereStepSize {
+		for j := 0.0; j <= 1+sphereStepSize; j += sphereStepSize {
 			theta := math.Pi * j
 			x := r*math.Cos(theta) + cx
 			y := r*math.Sin(theta)*math.Cos(phi) + cy
@@ -322,9 +311,27 @@ func generateSpherePoints(cx, cy, cz, r float64) *Matrix {
 
 func (m *Matrix) AddTorus(cx, cy, cz, r1, r2 float64) {
 	points := generateTorusPoints(cx, cy, cz, r1, r2)
-	for i := 0; i < points.cols; i++ {
-		p := points.mat
-		m.AddEdge(p[0][i], p[1][i], p[2][i], p[0][i], p[1][i], p[2][i])
+	p := points.mat
+	steps := int(1 / torusStepSize)
+	latStart, lonStart := 0, 0
+	latEnd, lonEnd := steps, steps
+	steps++
+	for lat := latStart; lat < latEnd; lat++ {
+		lat1 := lat * steps
+		lat2 := (lat1 + steps) % points.cols
+		for lon := lonStart; lon < lonEnd; lon++ {
+			index := lat1 + lon
+			indexLat2 := lat2 + lon
+			// fmt.Printf("*(%d, %d, %d)\n", index, index+1, indexLat2)
+			m.AddPolygon(p[0][index], p[1][index], p[2][index],
+				p[0][index+1], p[1][index+1], p[2][index+1],
+				p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
+			// fmt.Printf("+(%d, %d, %d)\n", index+1, indexLat2+1, indexLat2)
+			m.AddPolygon(
+				p[0][index+1], p[1][index+1], p[2][index+1],
+				p[0][indexLat2+1], p[1][indexLat2+1], p[2][indexLat2+1],
+				p[0][indexLat2], p[1][indexLat2], p[2][indexLat2])
+		}
 	}
 }
 
@@ -333,10 +340,10 @@ func (m *Matrix) AddTorus(cx, cy, cz, r1, r2 float64) {
 func generateTorusPoints(cx, cy, cz, r1, r2 float64) *Matrix {
 	m := MakeMatrix(4, 0)
 	// Rotating
-	for i := 0.0; i <= 1.0; i += torusStepSize {
+	for i := 0.0; i < 1+torusStepSize; i += torusStepSize {
 		phi := 2.0 * math.Pi * i
 		// Circle
-		for j := 0.0; j <= 1.0; j += torusStepSize {
+		for j := 0.0; j < 1+torusStepSize; j += torusStepSize {
 			theta := 2.0 * math.Pi * j
 			x := math.Cos(phi)*(r1*math.Cos(theta)+r2) + cx
 			y := r1*math.Sin(theta) + cy
