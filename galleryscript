@@ -1,0 +1,14 @@
+torus
+250 150 0 45 150
+torus
+250 235 0 40 100
+torus
+250 310 0 35 60
+torus
+250 375 0 30 15
+move
+0 -30 0
+apply
+display
+save
+poop.ppm
