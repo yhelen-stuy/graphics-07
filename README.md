@@ -1,2 +1,2 @@
-# graphics-06
-Work 06: Get to the Point
+# graphics-07
+Work 07: If your shapes don't look solid, tri a different angle...
